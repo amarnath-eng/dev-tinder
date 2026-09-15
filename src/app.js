@@ -1,65 +1,32 @@
 const express = require("express");
+const connectDB = require("./config/database");
+const User = require("./models/user");
 
 const app = express();
 
-app.get("/getUserData", (req, res) => {
-  throw new Error("abcdefg");
+app.post("/signup", async (req, res) => {
+  const user = new User({
+    firstName: "Mani",
+    lastName: "Shankar",
+    emailId: "mani@gmail.com",
+    password: "password123",
+  });
+
+  try {
+    await user.save();
+
+    res.send("User Added Successfully!");
+  } catch (err) {
+    res.status(400).send("Error Saving the User: " + err.message);
+  }
 });
 
-app.use("/", (err, req, res, next) => {
-  res.status(500).send("Something went wrong");
-});
+connectDB()
+  .then(() => {
+    console.log("Database Connection Established...");
 
-// app.use("/user", (req, res, next) => {
-//   console.log("Request Handler-1");
-//   next();
-// });
-
-// app.get("/userId", (req, res) => {
-//   res.send("request handler-2");
-// });
-
-// app.get("/user", (req, res) => {
-//   console.log("request handler-3");
-//   res.send("request handler-3");
-// });
-
-// app.use(
-//   "/user",
-//   (req, res, next) => {
-//     console.log("Handler 1");
-//     // res.send("Response1");
-//     next();
-//   },
-//   (req, res, next) => {
-//     console.log("Handler2");
-//     res.send("response2");
-//     next();
-//   },
-// );
-
-app.get("/user", (req, res, next) => {
-  // res.send({
-  //   firstName: "Amarnath",
-  //   lastName: "Avs",
-  // });
-  // console.log("req query: ", req.query);
-  next();
-});
-
-// app.get("/user/:userId/:name/:password", (req, res) => {
-//   res.send({
-//     firstName: "Amarnath",
-//     lastName: "Avs",
-//   });
-
-//   console.log("req query: ", req.params);
-// });
-
-// app.post("/user", (req, res) => res.send("Saved Successfully!"));
-
-// app.delete("/user", (req, res) => res.send("Deleted Successfully!"));
-
-app.listen(3000, () => {
-  console.log("Server is successfully listening on port 3000...");
-});
+    app.listen(3000, () => {
+      console.log("Server is successfully listening on port 3000...");
+    });
+  })
+  .catch((err) => console.error("Database Cannot be Connected!!\n", err));
