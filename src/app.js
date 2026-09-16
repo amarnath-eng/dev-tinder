@@ -18,6 +18,36 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+//Get User by EmailId
+app.post("/user", async (req, res) => {
+  try {
+    const users = await User.findOne();
+
+    if (!users || users.length === 0) {
+      res.status(404).send("User is not defined");
+    } else {
+      res.send(users);
+    }
+  } catch (err) {
+    console.error("Something went wrong: ", err.message);
+    res.status(400).send("Something went wrong: " + err.message);
+  }
+});
+
+//Get Feed
+app.get("/feed", async (req, res) => {
+  try {
+    const users = await User.find();
+    if (users.length === 0) {
+      res.status(404).send("No user found");
+    } else {
+      res.send(users);
+    }
+  } catch (err) {
+    res.status(400).send("Something went wrong: " + err.message);
+  }
+});
+
 connectDB()
   .then(() => {
     console.log("Database Connection Established...");
