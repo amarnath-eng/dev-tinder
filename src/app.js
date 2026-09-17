@@ -48,6 +48,37 @@ app.get("/feed", async (req, res) => {
   }
 });
 
+//Delete a User
+app.delete("/user", async (req, res) => {
+  try {
+    // const user = await User.findByIdAndDelete({ _id: req.body.userId });
+    const user = await User.findByIdAndDelete(req.body.userId);
+    if (!user) {
+      res.status(404).send("User is not defined");
+    } else {
+      res.send("User Delete Successfully");
+    }
+  } catch (err) {
+    res.status(400).send("Something went wrong: " + err.message);
+  }
+});
+
+//Update a User
+app.patch("/user", async (req, res) => {
+  const userId = req.body.userId;
+  const data = req.body;
+  try {
+    const user = await User.findByIdAndUpdate(userId, data, { new: true });
+    if (!user) {
+      res.send("User is not defined");
+    } else {
+      res.send("User Updated Successfully!");
+    }
+  } catch (err) {
+    res.status(400).send("Something went wrong: " + err.message);
+  }
+});
+
 connectDB()
   .then(() => {
     console.log("Database Connection Established...");
