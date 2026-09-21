@@ -68,7 +68,10 @@ app.patch("/user", async (req, res) => {
   const userId = req.body.userId;
   const data = req.body;
   try {
-    const user = await User.findByIdAndUpdate(userId, data, { new: true });
+    const user = await User.findByIdAndUpdate(userId, data, {
+      new: true,
+      runValidators: true,
+    });
     if (!user) {
       res.send("User is not defined");
     } else {
