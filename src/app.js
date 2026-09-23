@@ -43,13 +43,13 @@ app.post("/login", async (req, res) => {
     const user = await User.findOne({ emailId });
 
     if (!user) {
-      throw new Error("User is not defined");
+      throw new Error("Invalid Credentials");
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new Error("Incorrect Password");
+      throw new Error("Invalid Credentials");
     }
 
     res.send("Logged In successfully");
