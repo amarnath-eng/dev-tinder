@@ -36,6 +36,23 @@ const signupValidation = (req) => {
   }
 };
 
+const loginValidation = (req) => {
+  const { emailId, password } = req.body;
+
+  if (!emailId) {
+    throw new Error("Email Id is required");
+  }
+
+  if (!validator.isEmail(emailId)) {
+    throw new Error("Invalid EmailId");
+  }
+
+  if (!password) {
+    throw new Error("Password is required");
+  }
+};
+
 module.exports = {
   signupValidation,
+  loginValidation,
 };

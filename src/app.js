@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const connectDB = require("./config/database");
 const User = require("./models/user");
-const { signupValidation } = require("./utils/validation");
+const { signupValidation, loginValidation } = require("./utils/validation");
 
 const app = express();
 
@@ -29,6 +29,32 @@ app.post("/signup", async (req, res) => {
     res.send("User Added Successfully!");
   } catch (err) {
     res.status(400).send("Error Saving the User: " + err.message);
+  }
+});
+
+//Login
+app.post("/login", async (req, res) => {
+  try {
+    //Validation
+    loginValidation(req);
+
+    const { emailId, password } = req.body;
+
+    const user = await User.findOne({ emailId });
+
+    if (!user) {
+      throw new Error("User is not defined");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new Error("Incorrect Password");
+    }
+
+    res.send("Logged In successfully");
+  } catch (err) {
+    res.status(400).send("Error: " + err.message);
   }
 });
 
