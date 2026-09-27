@@ -6,12 +6,14 @@ const jwt = require("jsonwebtoken");
 const connectDB = require("./config/database");
 const User = require("./models/user");
 const { signupValidation, loginValidation } = require("./utils/validation");
+const {userAuth} = require("./middlewares/auth");
 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
 
+//SignUp 
 app.post("/signup", async (req, res) => {
   try {
     //Validation
@@ -56,7 +58,7 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid Credentials");
     }
 
-    const token = jwt.sign({_id: user._id}, "DEV@Tinder$2026");
+    const token = jwt.sign({_id: user._id}, "DEV@Tinder$2026", {expiresIn: "1d"});
 
     res.cookie("token", token);
     res.send("Logged In successfully");
@@ -66,22 +68,11 @@ app.post("/login", async (req, res) => {
 });
 
 //Get Profile
-app.get("/profile", async (req, res) => {
-  const cookies = req.cookies;
+app.get("/profile", userAuth, async (req, res) => {
 
-  const {token} = cookies;
+  try {  
+    const {user} = req;
 
-  //Validate the token
-  try {
-    if (!token) {
-      throw new Error("Invalid token");
-    }
-
-    const decodedMessage = jwt.verify(token, "DEV@Tinder$2026");
-    console.log("decodedMessage: ",decodedMessage);
-    const {_id} = decodedMessage;
-    
-    const user = await User.findById(_id);
     if (user) {
       return res.send(user);
     } else {
@@ -91,86 +82,13 @@ app.get("/profile", async (req, res) => {
     return res.status(404).send("Error: "+err.message);
   }
 
+});
+
+app.post("/sendConnectionRequest", userAuth, (req, res) => {
+  console.log("Sending Connection Request");
+
+  res.send("Connection Request Sent Successfully!");
 })
-
-//Get User by EmailId
-app.post("/user", async (req, res) => {
-  try {
-    const users = await User.findOne();
-
-    if (!users || users.length === 0) {
-      res.status(404).send("User is not defined");
-    } else {
-      res.send(users);
-    }
-  } catch (err) {
-    console.error("Something went wrong: ", err.message);
-    res.status(400).send("Something went wrong: " + err.message);
-  }
-});
-
-//Get Feed
-app.get("/feed", async (req, res) => {
-  try {
-    const users = await User.find();
-    if (users.length === 0) {
-      res.status(404).send("No user found");
-    } else {
-      res.send(users);
-    }
-  } catch (err) {
-    res.status(400).send("Something went wrong: " + err.message);
-  }
-});
-
-//Delete a User
-app.delete("/user", async (req, res) => {
-  try {
-    // const user = await User.findByIdAndDelete({ _id: req.body.userId });
-    const user = await User.findByIdAndDelete(req.body.userId);
-    if (!user) {
-      res.status(404).send("User is not defined");
-    } else {
-      res.send("User Delete Successfully");
-    }
-  } catch (err) {
-    res.status(400).send("Something went wrong: " + err.message);
-  }
-});
-
-//Update a User
-app.patch("/user/:userId", async (req, res) => {
-  const { userId } = req.params;
-  const data = req.body;
-
-  const ALLOWED_UPDATES = ["photoUrl", "about", "age", "skills"];
-
-  const isUpdateAllowed = Object.keys(data).every((k) =>
-    ALLOWED_UPDATES.includes(k),
-  );
-
-  if (!isUpdateAllowed) {
-    return res.status(400).send("Update not allowed!");
-  }
-
-  if (data?.skills?.length > 10) {
-    return res.status(400).send("Skills can't be more than 10");
-  }
-
-  try {
-    const user = await User.findByIdAndUpdate(userId, data, {
-      returnDocument: "after",
-      runValidators: true,
-    });
-    if (!user) {
-      res.send("User is not defined");
-    } else {
-      res.send("User Updated Successfully!");
-    }
-  } catch (err) {
-    res.status(400).send("Something went wrong: " + err.message);
-  }
-});
 
 connectDB()
   .then(() => {
