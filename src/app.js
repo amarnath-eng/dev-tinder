@@ -1,5 +1,8 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+
 const connectDB = require("./config/database");
 const User = require("./models/user");
 const { signupValidation, loginValidation } = require("./utils/validation");
@@ -7,6 +10,7 @@ const { signupValidation, loginValidation } = require("./utils/validation");
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
   try {
@@ -52,11 +56,38 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid Credentials");
     }
 
+    const token = jwt.sign({_id: user._id}, "DEV@Tinder$2026");
+
+    res.cookie("token", token);
     res.send("Logged In successfully");
   } catch (err) {
     res.status(400).send("Error: " + err.message);
   }
 });
+
+//Get Profile
+app.get("/profile", async (req, res) => {
+  const cookies = req.cookies;
+
+  const {token} = cookies;
+
+  //Validate the token
+  try {
+    const decodedMessage = jwt.verify(token, "DEV@Tinder$2026");
+    console.log("decodedMessage: ",decodedMessage);
+    const {_id} = decodedMessage;
+    
+    const user = await User.findById(_id);
+    if (user) {
+      return res.send(user);
+    } else {
+      throw new Error("User is not defined");
+    }
+  } catch (err) {
+    return res.status(404).send("Error: "+err.message);
+  }
+
+})
 
 //Get User by EmailId
 app.post("/user", async (req, res) => {
