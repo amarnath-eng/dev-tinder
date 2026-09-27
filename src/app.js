@@ -73,6 +73,10 @@ app.get("/profile", async (req, res) => {
 
   //Validate the token
   try {
+    if (!token) {
+      throw new Error("Invalid token");
+    }
+
     const decodedMessage = jwt.verify(token, "DEV@Tinder$2026");
     console.log("decodedMessage: ",decodedMessage);
     const {_id} = decodedMessage;
