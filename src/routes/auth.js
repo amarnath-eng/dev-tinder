@@ -6,9 +6,12 @@ const authRouter = express.Router();
 
 const User = require("../models/user");
 
-const { signupValidation, loginValidation } = require("../utils/validation");
+const {
+  signupValidation,
+  loginValidation,
+} = require("../utils/authValidation");
 
-//Signup 
+//Signup
 authRouter.post("/signup", async (req, res) => {
   try {
     //Validation
@@ -59,6 +62,16 @@ authRouter.post("/login", async (req, res) => {
     res.send("Logged In successfully");
   } catch (err) {
     res.status(400).send("Error: " + err.message);
+  }
+});
+
+//Logout
+authRouter.post("/logout", async (req, res) => {
+  try {
+    res.clearCookie("token");
+    res.send("Logged Out successfully");
+  } catch (err) {
+    res.status(500).send("Error: " + err.message);
   }
 });
 
